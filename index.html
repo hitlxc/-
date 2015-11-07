@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>tree</title>
+
+<!--图标样式-->
+<link rel="stylesheet" type="text/css" href="tree/css/bootstrap.min.css" />
+
+<!--主要样式-->
+<link rel="stylesheet" type="text/css" href="tree/css/style.css" />
+
+<script type="text/javascript" src="tree/js/jquery-1.7.2.min.js"></script>
+
+<script type="text/javascript">
+function run()
+{
+	$(function(){
+		$('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');
+		$('.tree li.parent_li > span').on('click', function (e) {
+			var children = $(this).parent('li.parent_li').find(' > ul > li');
+			if (children.is(":visible")) {
+				children.hide('fast');
+				$(this).attr('title', 'Expand this branch').find(' > i').addClass('icon-plus-sign').removeClass('icon-minus-sign');
+			} else {
+				children.show('fast');
+				$(this).attr('title', 'Collapse this branch').find(' > i').addClass('icon-minus-sign').removeClass('icon-plus-sign');
+			}
+			e.stopPropagation();
+		});
+	})
+	
+};
+</script>
+
+</head>
+
+<body>
+<div class="tree well">
+	<ul id='root'>
+	</ul>
+</div>
+<script type="text/javascript">
+	function set_tree(response,i,gener)
+	{
+		if(response!="")
+		{
+			for (x in response)
+			{						
+				document.getElementById(i).innerHTML += '<li><span><i class="icon-minus-sign"></i> '+response[x]+'<p style="display:inline" class="badge">'+gener+'</p></span><ul id='+response[x]+'></ul></li>';												
+			}
+		}			
+	}
+
+	var xmlhttp,response;
+	if (window.XMLHttpRequest)
+	  {// code for IE7+, Firefox, Chrome, Opera, Safari
+	  xmlhttp=new XMLHttpRequest();
+	  }
+	else
+	  {// code for IE6, IE5
+	  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	  }
+	 xmlhttp.onreadystatechange=function()
+  	{
+		if (xmlhttp.readyState==4 && xmlhttp.status==200)
+		{
+			var str = xmlhttp.responseText;
+			var response =  JSON.parse(str);
+			
+			for (x in response[90000])
+			{
+				document.getElementById('root').innerHTML += '<li><span><i class="icon-folder-open"></i> '+'&nbsp;&nbsp;&nbsp;'+response[90000][x]+'&nbsp;&nbsp;&nbsp;'+'<p style="display:inline" class="badge">1</p></span> <ul id='+response[90000][x]+'></ul></li>';			
+			}
+			var father = new Array();
+			father = response[90000];
+			var son = new Array();				
+			while(father != "")
+			{
+			
+				son = [];	
+				var gener = 2;	
+				for (z in father)					
+				{
+				
+					set_tree(response[father[z]],father[z],gener);		
+					gener++;	
+					for (y in response[father[z]])
+					{
+						var next = response[father[z]][y];
+						son.push(next);		
+					}
+				}
+				father = son;	
+			}
+			run();
+		}
+  }
+	  xmlhttp.open("POST","Human.php",true);
+	  xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");	  
+	  xmlhttp.send(); 
+</script>
+
+
+
+</body>
+
+
+</html>
